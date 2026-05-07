@@ -1,146 +1,80 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CalendarDays, Clock3, Package, Plus, ReceiptText, ShoppingCart } from 'lucide-react';
+import { ArrowRight, CalendarDays, Package, Plus, ReceiptText, ShoppingCart, TrendingUp } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatDateTime, isSameDay, rupiah } from '@/lib/receipt';
+import { rupiah, isSameDay } from '@/lib/receipt';
 
 export default function DashboardPage() {
-  const transactions = useAppStore((state) => state.transactions);
-  const items = useAppStore((state) => state.items);
+  const transactions = useAppStore((s) => s.transactions);
+  const items = useAppStore((s) => s.items);
 
-  const todayTransactions = transactions.filter((transaction) => isSameDay(transaction.date));
-  const todaysRevenue = todayTransactions.reduce((sum, transaction) => sum + transaction.total, 0);
-  const recentTransactions = transactions.slice(0, 5);
-
-  const stats = [
-    {
-      label: 'Transaksi hari ini',
-      value: todayTransactions.length.toString(),
-      helper: 'Order masuk sejak pagi',
-      icon: ReceiptText,
-    },
-    {
-      label: 'Pendapatan hari ini',
-      value: rupiah(todaysRevenue),
-      helper: 'Total penjualan hari ini',
-      icon: Clock3,
-    },
-    {
-      label: 'Total item katalog',
-      value: items.length.toString(),
-      helper: 'Produk dan jasa aktif',
-      icon: Package,
-    },
-  ];
-
-  const actions = [
-    { href: '/calculator', label: 'New Transaction', icon: ShoppingCart },
-    { href: '/items', label: 'Add Item', icon: Plus },
-    { href: '/history', label: 'View History', icon: CalendarDays },
-  ];
+  const todayTx = transactions.filter(tx => isSameDay(tx.date));
+  const todayRevenue = todayTx.reduce((s,tx) => s + tx.total, 0);
+  const totalRevenue = transactions.reduce((s,tx) => s + tx.total, 0);
 
   return (
-    <div className="space-y-4">
-      <section className="glass rounded-[28px] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-orange-400/70">Dashboard</p>
-        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-3xl font-semibold text-white">POS sederhana untuk UMKM</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-              Kelola transaksi, katalog produk, dan kirim struk langsung ke WhatsApp dalam satu alur cepat.
-            </p>
+    <div className="space-y-8">
+      {/* Hero — daily overview */}
+      <section className="marketet-card bg-gradient-to-br from-[#D4784C] to-[#B8653A] p-6 text-white sm:p-8">
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-sm">
+              <CalendarDays size={12} /> Hari Ini
+            </span>
+            <div>
+              <div className="text-sm text-white/80">Pendapatan Hari Ini</div>
+              <div className="mt-1 text-4xl font-black">{rupiah(todayRevenue)}</div>
+            </div>
+            <div className="flex gap-4 text-sm text-white/70">
+              <span>{todayTx.length} transaksi</span>
+              <span>{items.length} item katalog</span>
+            </div>
           </div>
-          <Link
-            href="/calculator"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-400"
-          >
-            Mulai Kasir
-            <ArrowRight size={16} />
-          </Link>
+          <div className="flex items-end justify-end gap-2">
+            <Link href="/calculator" className="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#D4784C] transition-all hover:bg-white/90">
+              <Plus size={14} className="inline mr-1.5" />Transaksi Baru
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className="glass rounded-[24px] p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm text-slate-400">{stat.label}</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{stat.value}</p>
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        {[
+          { label:'Transaksi Hari Ini', value:todayTx.length, icon:ShoppingCart },
+          { label:'Pendapatan Hari Ini', value:rupiah(todayRevenue), icon:TrendingUp },
+          { label:'Total Pendapatan', value:rupiah(totalRevenue), icon:ReceiptText },
+          { label:'Item Katalog', value:items.length, icon:Package },
+        ].map(s=>{const I=s.icon;return(
+          <div key={s.label} className="market-card text-center">
+            <I size={18} className="mx-auto mb-2 text-[#D4784C]" />
+            <div className="text-xl font-bold text-[#3D2B1F]">{s.value}</div>
+            <div className="text-[10px] text-[#7A6B5D] uppercase tracking-[0.1em] mt-1">{s.label}</div>
+          </div>
+        )})}
+      </div>
+
+      {/* Recent transactions */}
+      <section>
+        <h2 className="mb-3 text-lg font-bold text-[#3D2B1F]">Transaksi Terbaru</h2>
+        <div className="space-y-2">
+          {transactions.slice(0,5).map(tx=>(
+            <div key={tx.id} className="market-card flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5B8C3E]/10">
+                  <ReceiptText size={14} className="text-[#5B8C3E]" />
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-400">
-                  <Icon size={18} />
+                <div>
+                  <p className="text-sm font-semibold">{tx.items?.length || 0} item</p>
+                  <p className="text-[10px] text-[#7A6B5D]">{new Date(tx.date).toLocaleDateString('id-ID')}</p>
                 </div>
               </div>
-              <p className="mt-3 text-sm text-slate-400">{stat.helper}</p>
+              <span className="text-sm font-bold text-[#5B8C3E]">{rupiah(tx.total)}</span>
             </div>
-          );
-        })}
-      </section>
-
-      <section className="glass rounded-[28px] p-4">
-        <p className="text-sm font-semibold text-white">Quick actions</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {actions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-4 transition hover:border-orange-500/40 hover:bg-orange-500/10"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-400">
-                    <Icon size={18} />
-                  </div>
-                  <span className="font-medium text-white">{action.label}</span>
-                </div>
-                <ArrowRight size={16} className="text-orange-300" />
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="glass rounded-[28px] p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-white">Transaksi terbaru</p>
-            <p className="text-sm text-slate-400">Pantau order terakhir yang tersimpan di perangkat ini.</p>
-          </div>
-          <Link href="/history" className="text-sm font-semibold text-orange-300 hover:text-orange-200">
-            Lihat semua
-          </Link>
-        </div>
-
-        <div className="mt-4 space-y-3">
-          {recentTransactions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-6 text-sm text-slate-400">
-              Belum ada transaksi. Coba buat transaksi pertama di menu Kasir.
-            </div>
-          ) : (
-            recentTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-semibold text-white">{transaction.customerName || 'Pelanggan umum'}</p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {formatDateTime(transaction.date)} · {transaction.items.length} item
-                  </p>
-                </div>
-                <div className="flex items-center justify-between gap-3 sm:justify-end">
-                  <p className="text-lg font-semibold text-orange-300">{rupiah(transaction.total)}</p>
-                  <Link href="/history" className="text-sm font-semibold text-slate-200 hover:text-white">
-                    Detail
-                  </Link>
-                </div>
-              </div>
-            ))
+          ))}
+          {transactions.length === 0 && (
+            <div className="market-card p-8 text-center text-[#7A6B5D]">Belum ada transaksi.</div>
           )}
         </div>
       </section>

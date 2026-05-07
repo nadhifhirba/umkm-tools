@@ -1,58 +1,31 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Calculator, History, Home, LayoutGrid, Package } from 'lucide-react';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Store } from 'lucide-react';
 import './globals.css';
 
-export const metadata = {
-  title: 'UMKM Simple Tools',
-  description: 'POS calculator dan ekspor WhatsApp untuk UMKM',
-};
+const jakarta = Plus_Jakarta_Sans({ subsets:['latin'],weight:['400','500','600','700'],variable:'--font-plus-jakarta',display:'swap' });
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/calculator', label: 'Kasir', icon: Calculator },
-  { href: '/items', label: 'Item', icon: Package },
-  { href: '/history', label: 'Riwayat', icon: History },
-];
+export const metadata: Metadata = { title: 'UMKM Tools — Small Business Dashboard', description: 'Dashboard UMKM: POS kasir, katalog, riwayat transaksi.' };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }:Readonly<{children:ReactNode}>) {
   return (
-    <html lang="id">
-      <body>
-        <div className="min-h-screen text-slate-100">
-          <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <Link href="/" className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orange-500/30 bg-orange-500/15 text-orange-400 shadow-[0_0_30px_rgba(249,115,22,0.2)]">
-                  <LayoutGrid size={20} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.5em] text-orange-400/70">
-                    UMKM_TOOLS
-                  </p>
-                  <h1 className="text-lg font-semibold tracking-wide text-white">Simple Tools</h1>
-                </div>
-              </Link>
-
-              <nav className="flex flex-wrap gap-2 text-sm">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-slate-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-200"
-                    >
-                      <Icon size={15} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
+    <html lang="id" suppressHydrationWarning>
+      <body className={`${jakarta.variable}`}>
+        <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-5 sm:px-6">
+          <header className="mb-6 flex items-center justify-between rounded-2xl border border-[#EDE0D4] bg-white px-5 py-3 shadow-sm">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#D4784C] text-white"><Store size={18} /></div>
+              <div><h1 className="text-base font-bold tracking-tight text-[#3D2B1F]">UMKM<span className="text-[#D4784C]">Tools</span></h1><p className="text-[10px] text-[#7A6B5D]">Small Business Dashboard</p></div>
+            </Link>
+            <nav className="flex gap-1.5">
+              {[{href:'/',label:'Dashboard'},{href:'/items',label:'Katalog'},{href:'/history',label:'Riwayat'}].map(i=>(
+                <Link key={i.href} href={i.href} className="rounded-full px-4 py-2 text-sm font-medium text-[#7A6B5D] transition-all hover:bg-[#FFF8F0] hover:text-[#3D2B1F]">{i.label}</Link>
+              ))}
+            </nav>
           </header>
-
-          <main className="mx-auto w-full max-w-7xl px-4 py-4 pb-10">{children}</main>
+          <main className="flex-1">{children}</main>
         </div>
       </body>
     </html>
